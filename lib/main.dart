@@ -9,7 +9,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Todo List',
+      title: 'Daftar tugas dengan batas waktu',
       home: TodoListScreen(),
       debugShowCheckedModeBanner: false,
     );
@@ -19,7 +19,9 @@ class MyApp extends StatelessWidget {
 class Todo {
   String title;
   bool isDone;
-  Todo({required this.title, this.isDone = false});
+  DateTime? deadline;
+
+  Todo({required this.title, this.isDone = false, this.deadline});
 }
 
 class TodoListScreen extends StatefulWidget {
@@ -30,12 +32,17 @@ class TodoListScreen extends StatefulWidget {
 class _TodoListScreenState extends State<TodoListScreen> {
   final List<Todo> _todos = [];
   final TextEditingController _inputController = TextEditingController();
+  DateTime? _selectedDate;
 
   void _addTodo() {
     if (_inputController.text.trim().isEmpty) return;
     setState(() {
-      _todos.insert(0, Todo(title: _inputController.text.trim()));
+      _todos.insert(
+        0,
+        Todo(title: _inputController.text.trim(), deadline: _selectedDate),
+      );
       _inputController.clear();
+      _selectedDate = null;
     });
   }
 
@@ -47,22 +54,46 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   void _editTodo(int index) {
     _inputController.text = _todos[index].title;
+    _selectedDate = _todos[index].deadline;
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
             title: const Text('Edit Tugas'),
-            content: TextField(
-              controller: _inputController,
-              decoration: const InputDecoration(labelText: 'Edit Tugas'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _inputController,
+                  decoration: const InputDecoration(labelText: 'Edit tugas'),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedDate == null
+                            ? 'Tidak ada batas waktu'
+                            : 'Tenggat waktu: ${_selectedDate!.toString().split(' ')[0]}',
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _pickDate,
+                      child: const Text('Pick Date'),
+                    ),
+                  ],
+                ),
+              ],
             ),
             actions: [
               TextButton(
                 onPressed: () {
                   setState(() {
                     _todos[index].title = _inputController.text.trim();
+                    _todos[index].deadline = _selectedDate;
                   });
                   _inputController.clear();
+                  _selectedDate = null;
                   Navigator.pop(context);
                 },
                 child: const Text('Simpan'),
@@ -70,6 +101,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
               TextButton(
                 onPressed: () {
                   _inputController.clear();
+                  _selectedDate = null;
                   Navigator.pop(context);
                 },
                 child: const Text('Batal'),
@@ -85,30 +117,65 @@ class _TodoListScreenState extends State<TodoListScreen> {
     });
   }
 
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? now,
+      firstDate: now,
+      lastDate: DateTime(now.year + 5),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            AppBar(title: const Text('Daftar Tugas'), elevation: 0),
+            AppBar(
+              title: const Text('Daftar Tugas dengan Batas Waktu'),
+              backgroundColor: Colors.blueAccent,
+              elevation: 0,
+            ),
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _inputController,
-                      decoration: const InputDecoration(
-                        hintText: 'Masukkan tugas baru...',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(),
-                      ),
+                  TextField(
+                    controller: _inputController,
+                    decoration: const InputDecoration(
+                      hintText: 'Masukkan tugas baru',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(onPressed: _addTodo, child: const Text('Tambah')),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _selectedDate == null
+                              ? 'tidak ada batas waktu yang dipilih'
+                              : 'Tenggat waktu: ${_selectedDate!.toString().split(' ')[0]}',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _pickDate,
+                        child: const Text('Pilih tanggal'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _addTodo,
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -116,6 +183,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
               child: ListView.builder(
                 itemCount: _todos.length,
                 itemBuilder: (context, index) {
+                  final todo = _todos[index];
                   return Card(
                     color: Colors.white,
                     margin: const EdgeInsets.symmetric(
@@ -124,18 +192,23 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     ),
                     child: ListTile(
                       leading: Checkbox(
-                        value: _todos[index].isDone,
+                        value: todo.isDone,
                         onChanged: (_) => _toggleDone(index),
                       ),
                       title: Text(
-                        _todos[index].title,
+                        todo.title,
                         style: TextStyle(
                           decoration:
-                              _todos[index].isDone
-                                  ? TextDecoration.lineThrough
-                                  : null,
+                              todo.isDone ? TextDecoration.lineThrough : null,
                         ),
                       ),
+                      subtitle:
+                          todo.deadline != null
+                              ? Text(
+                                'Tenggat waktu: ${todo.deadline!.toString().split(' ')[0]}',
+                                style: const TextStyle(fontSize: 12),
+                              )
+                              : null,
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
