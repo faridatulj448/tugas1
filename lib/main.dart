@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Todo List',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: TodoListScreen(),
-    );
+    return MaterialApp(home: TodoListScreen());
   }
 }
 
@@ -21,39 +19,60 @@ class TodoListScreen extends StatefulWidget {
 }
 
 class _TodoListScreenState extends State<TodoListScreen> {
-  final List<String> _todoList = [];
+  final List<String> _todoList = ['Tugas 1', 'Tugas 2', 'Tugas 3'];
   final TextEditingController _controller = TextEditingController();
 
+  // Fungsi untuk menambah tugas baru
   void _addTodo() {
     setState(() {
-      _todoList.add(_controller.text);
-      _controller.clear();
+      _todoList.add('Tugas Baru');
     });
   }
 
-  void _deleteTodo(int index) {
-    setState(() {
-      _todoList.removeAt(index);
-    });
+  // Fungsi untuk mengedit tugas yang ada
+  void _editTodo(int index) {
+    _controller.text = _todoList[index];
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Tugas'),
+          content: TextField(
+            controller: _controller,
+            decoration: const InputDecoration(labelText: 'Edit Tugas'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _todoList[index] = _controller.text;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Simpan'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Batal'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Daftar Tugas')),
+      appBar: AppBar(title: const Text('Daftar Tugas')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                labelText: 'Tugas Baru',
-                border: OutlineInputBorder(),
-              ),
-            ),
+          ElevatedButton(
+            onPressed: _addTodo,
+            child: const Text('Tambah Tugas'),
           ),
-          ElevatedButton(onPressed: _addTodo, child: Text('Tambah Tugas')),
           Expanded(
             child: ListView.builder(
               itemCount: _todoList.length,
@@ -61,8 +80,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 return ListTile(
                   title: Text(_todoList[index]),
                   trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => _deleteTodo(index),
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _editTodo(index),
                   ),
                 );
               },
