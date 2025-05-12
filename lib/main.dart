@@ -78,3 +78,28 @@ class _TodoListScreenState extends State<TodoListScreen> {
           ),
     );
   }
+   void _confirmDelete(int index) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Hapus Tugas'),
+            content: const Text('Apakah Anda yakin ingin menghapus tugas ini?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context), // Batal
+                child: const Text('Batal'),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _todos.removeAt(index);
+                  });
+                  Navigator.pop(context); // Tutup dialog
+                },
+                child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+    );
+  }
