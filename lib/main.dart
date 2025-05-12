@@ -38,3 +38,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
       _inputController.clear();
     });
   }
+
+  void _toggleDone(int index) {
+    setState(() {
+      _todos[index].isDone = !_todos[index].isDone;
+    });
+  }
