@@ -27,3 +27,14 @@ class TodoListScreen extends StatefulWidget {
   @override
   State<TodoListScreen> createState() => _TodoListScreenState();
 }
+class _TodoListScreenState extends State<TodoListScreen> {
+  final List<Todo> _todos = [];
+  final TextEditingController _inputController = TextEditingController();
+
+  void _addTodo() {
+    if (_inputController.text.trim().isEmpty) return;
+    setState(() {
+      _todos.insert(0, Todo(title: _inputController.text.trim()));
+      _inputController.clear();
+    });
+  }
