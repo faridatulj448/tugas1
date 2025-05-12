@@ -103,3 +103,88 @@ class _TodoListScreenState extends State<TodoListScreen> {
           ),
     );
   }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.lightBlue[100], // FULL background color
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                title: const Text('Todo List'),
+                backgroundColor: Colors.blueAccent,
+                elevation: 0,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _inputController,
+                        decoration: const InputDecoration(
+                          hintText: 'Masukkan tugas baru...',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: _addTodo,
+                      child: const Text('Tambahkan'),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _todos.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      color: Colors.white,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: ListTile(
+                        leading: Checkbox(
+                          value: _todos[index].isDone,
+                          onChanged: (_) => _toggleDone(index),
+                        ),
+                        title: Text(
+                          _todos[index].title,
+                          style: TextStyle(
+                            decoration:
+                                _todos[index].isDone
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => _editTodo(index),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => _confirmDelete(index),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
