@@ -44,3 +44,37 @@ class _TodoListScreenState extends State<TodoListScreen> {
       _todos[index].isDone = !_todos[index].isDone;
     });
   }
+
+  void _editTodo(int index) {
+    _inputController.text = _todos[index].title;
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Edit Tugas'),
+            content: TextField(
+              controller: _inputController,
+              decoration: const InputDecoration(labelText: 'Edit Tugas'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _todos[index].title = _inputController.text.trim();
+                  });
+                  _inputController.clear();
+                  Navigator.pop(context);
+                },
+                child: const Text('Simpan'),
+              ),
+              TextButton(
+                onPressed: () {
+                  _inputController.clear();
+                  Navigator.pop(context);
+                },
+                child: const Text('Batal'),
+              ),
+            ],
+          ),
+    );
+  }
