@@ -22,3 +22,8 @@ class Todo {
   bool isDone;
   Todo({required this.title, this.isDone = false});
 }
+
+class TodoListScreen extends StatefulWidget {
+  @override
+  State<TodoListScreen> createState() => _TodoListScreenState();
+}
