@@ -1,42 +1,78 @@
 import 'package:flutter/material.dart';
-import 'add_task_page.dart';
+import 'home_page.dart';
 
-class Todo {
-  String title;
-  bool isDone;
-  DateTime? deadline;
-  Todo({required this.title, this.isDone = false, this.deadline});
-}
+class AddTaskPage extends StatefulWidget {
+  const AddTaskPage({super.key});
 
-class TodoListScreen extends StatefulWidget {
-  const TodoListScreen({super.key});
   @override
-  State<TodoListScreen> createState() => _TodoListScreenState();
+  State<AddTaskPage> createState() => _AddTaskPageState();
 }
 
-class _TodoListScreenState extends State<TodoListScreen> {
-  final List<Todo> _todos = [];
+class _AddTaskPageState extends State<AddTaskPage> {
+  final TextEditingController _controller = TextEditingController();
+  DateTime? _selectedDate;
 
-  void _navigateToAddPage() async {
-    final newTodo = await Navigator.push<Todo>(
-      context,
-      MaterialPageRoute(builder: (_) => const AddTaskPage()),
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
     );
-
-    if (newTodo != null) {
+    if (picked != null) {
       setState(() {
-        _todos.insert(0, newTodo);
+        _selectedDate = picked;
       });
     }
   }
-  void _toggleDone(int index) {
-    setState(() {
-      _todos[index].isDone = !_todos[index].isDone;
-    });
+
+  void _saveTask() {
+    if (_controller.text.trim().isEmpty) return;
+
+    final newTodo = Todo(
+      title: _controller.text.trim(),
+      deadline: _selectedDate,
+    );
+
+    Navigator.pop(context, newTodo);
   }
 
-  void _deleteTodo(int index) {
-    setState(() {
-      _todos.removeAt(index);
-    });
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Tambah Tugas')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              decoration: const InputDecoration(labelText: 'Nama Tugas'),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDate == null
+                        ? 'Tidak ada tenggat waktu'
+                        : 'Tenggat: ${_selectedDate!.toString().split(' ')[0]}',
+                  ),
+                ),
+                TextButton(
+                  onPressed: _pickDate,
+                  child: const Text('Pilih Tanggal'),
+                ),
+              ],
+            ),
+            const Spacer(),
+            ElevatedButton(
+              onPressed: _saveTask,
+              child: const Text('Simpan'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
+}
